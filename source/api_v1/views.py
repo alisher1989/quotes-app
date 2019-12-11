@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -30,15 +30,19 @@ class QuoteViewSet(ModelViewSet):
     # доступ к изменению и удалению цитат
     # только для вошедших пользователей
     # ...
+    # название точки входа для проверки
+    # доступно в: self.action
 
-
-class RateUpView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request, pk=None):
-        quote = get_object_or_404(Quote, pk=pk)
-        if quote.status != QUOTE_APPROVED:
-            return Response({'error': 'Цитата не утверждена'}, status=403)
+    @action(methods=['post'], detail=True)
+    def rate_up(self, request, pk=None):
+        quote = self.get_object()
         quote.rating += 1
         quote.save()
         return Response({'id': quote.pk, 'rating': quote.rating})
+
+    # def rate_down
+    # ...
+
+# здесь может понадобится точка входа для выдачи кодов и названий статусов,
+# чтобы передавать их на клиент с сервера, а не копировать в код клиента.
+# (по заданию не обязательно, но желательно).

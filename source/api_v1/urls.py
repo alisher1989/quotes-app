@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.routers import DefaultRouter
-from api_v1.views import LogoutView, QuoteViewSet, RateUpView
+from api_v1.views import LogoutView, QuoteViewSet
 
 app_name = 'api_v1'
 
@@ -11,6 +11,5 @@ router.register(r'quote', QuoteViewSet)
 urlpatterns = [
     path('login/', obtain_auth_token, name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
-    path('', include(router.urls)),
-    path('quote/<int:pk>/rate-up/', RateUpView.as_view(), name='rate_up')
+    path('', include(router.urls))
 ]
