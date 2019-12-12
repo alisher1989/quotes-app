@@ -1,5 +1,5 @@
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated, SAFE_METHODS
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -27,11 +27,10 @@ class QuoteViewSet(ModelViewSet):
             return Quote.objects.all()
         return Quote.objects.filter(status=QUOTE_APPROVED)
 
-    # доступ к изменению и удалению цитат
-    # только для вошедших пользователей
-    # ...
-    # название точки входа для проверки
-    # доступно в: self.action
+    def get_permissions(self):
+        if self.action not in ['update', 'partial_update', 'destroy']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     @action(methods=['post'], detail=True)
     def rate_up(self, request, pk=None):
@@ -40,8 +39,13 @@ class QuoteViewSet(ModelViewSet):
         quote.save()
         return Response({'id': quote.pk, 'rating': quote.rating})
 
-    # def rate_down
-    # ...
+    @action(methods=['post'], detail=True)
+    def rate_down(self, request, pk=None):
+        quote = self.get_object()
+        quote.rating -= 1
+        quote.save()
+        return Response({'id': quote.pk, 'rating': quote.rating})
+
 
 # здесь может понадобится точка входа для выдачи кодов и названий статусов,
 # чтобы передавать их на клиент с сервера, а не копировать в код клиента.
